@@ -16,7 +16,7 @@ Automatiza la instalación y gestión de **n8n** con **Docker Compose**, verific
   - `logs` (ver logs en tiempo real)
 
 ---
-/*
+<!--
 ## 📋 Requisitos
 
 - `docker` instalado.  
@@ -33,9 +33,9 @@ Automatiza la instalación y gestión de **n8n** con **Docker Compose**, verific
       -o ~/.docker/cli-plugins/docker-compose
     chmod +x ~/.docker/cli-plugins/docker-compose
     ```
-*/
----
 
+---
+-->
 ## ⚙️ Uso
 
 En el caso de que se quierea usar un .yml se deberá usar el comando 
