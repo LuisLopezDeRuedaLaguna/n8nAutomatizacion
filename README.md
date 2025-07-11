@@ -38,6 +38,10 @@ Automatiza la instalación y gestión de **n8n** con **Docker Compose**, verific
 
 ## ⚙️ Uso
 
+En el caso de que se quierea usar un .yml se deberá usar el comando 
+ ```bash
+    ./n8n-auto -f .yml start
+ ```
 Hazlo ejecutable:
 
 ```bash
