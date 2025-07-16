@@ -1,16 +1,44 @@
 #!/usr/bin/env bash
 set -e
 
-
 BASE_DIR="$HOME/n8n-compose"
 DEFAULT_FILE="docker-compose.yml"
 YML_FILE=""
-
+DOCKER_COMPOSE_VERSION="v2.38.2"
 
 function has_cmd { command -v "$1" &> /dev/null; }
 
+function install_docker {
+  echo "Instalando Docker..."
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo sh get-docker.sh
+  sudo usermod -aG docker "$USER"
+  newgrp docker
+  echo "Docker instalado correctamente."
+}
 
-function ensure_compose_v2() {
+function install_docker_compose {
+  echo "Instalando Docker Compose..."
+  sudo curl -SL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+  echo "Docker Compose instalado correctamente."
+}
+
+function ensure_docker_and_compose {
+  if ! has_cmd "docker"; then
+    install_docker
+  else
+    echo "Docker ya está instalado."
+  fi
+
+  if ! has_cmd "docker-compose"; then
+    install_docker_compose
+  else
+    echo "Docker Compose ya está instalado."
+  fi
+}
+
+function ensure_compose_v2 {
   if has_cmd "docker" && docker compose version &> /dev/null; then
     return 0
   fi
@@ -32,7 +60,6 @@ EOF
   exit 1
 }
 
-
 if [[ "$1" == "-f" && -n "$2" ]]; then
   YML_FILE="$2"
   shift 2
@@ -46,14 +73,15 @@ if [[ -z "$COMMAND" ]]; then
   exit 1
 fi
 
-
 function up {
+  ensure_docker_and_compose
   ensure_compose_v2
   [[ -f "$YML_FILE" ]] || { echo "No se encontró $YML_FILE"; exit 1; }
   docker compose -f "$YML_FILE" up -d
 }
 
 function down {
+  ensure_docker_and_compose
   ensure_compose_v2
   docker compose -f "$YML_FILE" down
 }
@@ -63,6 +91,7 @@ function status {
 }
 
 function logs {
+  ensure_docker_and_compose
   ensure_compose_v2
   docker compose -f "$YML_FILE" logs -f
 }
