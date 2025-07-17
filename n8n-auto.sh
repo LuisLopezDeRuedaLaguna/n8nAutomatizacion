@@ -52,6 +52,18 @@ EOF
   exit 1
 }
 
+function fix_docker_permissions {
+  echo "Verificando y ajustando permisos para el socket de Docker..."
+  if ! groups "$USER" | grep -q '\bdocker\b'; then
+    echo "Añadiendo el usuario al grupo 'docker'..."
+    sudo usermod -aG docker "$USER"
+    newgrp docker
+  fi
+
+  sudo setfacl --modify user:"$USER":rw /var/run/docker.sock
+  echo "Permisos ajustados correctamente."
+}
+
 if [[ "$1" == "-f" && -n "$2" ]]; then
   YML_FILE="$2"
   shift 2
@@ -68,6 +80,7 @@ fi
 function up {
   ensure_docker_and_compose
   ensure_compose_v2
+  fix_docker_permissions
   [[ -f "$YML_FILE" ]] || { echo "No se encontró $YML_FILE"; exit 1; }
   docker compose -f "$YML_FILE" up -d
 }
@@ -75,6 +88,7 @@ function up {
 function down {
   ensure_docker_and_compose
   ensure_compose_v2
+  fix_docker_permissions
   docker compose -f "$YML_FILE" down
 }
 
@@ -85,6 +99,7 @@ function status {
 function logs {
   ensure_docker_and_compose
   ensure_compose_v2
+  fix_docker_permissions
   docker compose -f "$YML_FILE" logs -f
 }
 
