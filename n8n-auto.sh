@@ -8,15 +8,6 @@ DOCKER_COMPOSE_VERSION="v2.38.2"
 
 function has_cmd { command -v "$1" &> /dev/null; }
 
-function install_docker {
-  echo "Instalando Docker..."
-  curl -fsSL https://get.docker.com -o get-docker.sh
-  sudo sh get-docker.sh
-  sudo usermod -aG docker "$USER"
-  newgrp docker
-  echo "Docker instalado correctamente."
-}
-
 function install_docker_compose {
   echo "Instalando Docker Compose..."
   sudo curl -SL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -26,7 +17,8 @@ function install_docker_compose {
 
 function ensure_docker_and_compose {
   if ! has_cmd "docker"; then
-    install_docker
+    echo "Docker no está instalado. Por favor instálalo antes de ejecutar este script."
+    exit 1
   else
     echo "Docker ya está instalado."
   fi
