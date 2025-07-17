@@ -1,115 +1,87 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-BASE_DIR="$HOME/n8n-compose"
+BASE_DIR="${HOME}/n8n-compose"
 DEFAULT_FILE="docker-compose.yml"
 YML_FILE=""
-DOCKER_COMPOSE_VERSION="v2.38.2"
+USE_PLUGIN=true
 
-function has_cmd { command -v "$1" &> /dev/null; }
+function has_cmd { command -v "$1" &>/dev/null; }
 
-function install_docker_compose {
-  echo "Instalando Docker Compose..."
-  sudo curl -SL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  sudo chmod +x /usr/local/bin/docker-compose
-  echo "Docker Compose instalado correctamente."
+function install_compose_plugin {
+  echo "Instalando plugin Docker Compose v2 (docker compose)..."
+  sudo apt-get update
+  sudo apt-get install -y docker-compose-plugin
+  echo "Plugin instalado correctamente."
 }
 
 function ensure_docker_and_compose {
-  if ! has_cmd "docker"; then
-    echo "Docker no está instalado. Por favor instálalo antes de ejecutar este script."
+  if ! has_cmd docker; then
+    echo "ERROR: Docker no instalado."
     exit 1
+  fi
+
+  if docker compose version &>/dev/null; then
+    echo "docker compose (v2) ya está disponible."
+    USE_PLUGIN=true
   else
-    echo "Docker ya está instalado."
+    echo "docker compose no disponible."
+    if has_cmd docker-compose; then
+      echo "Se detectó docker‑compose (v1). Se recomienda migrar."
+      USE_PLUGIN=false
+    else
+      install_compose_plugin
+      USE_PLUGIN=true
+    fi
   fi
-
-  if ! has_cmd "docker-compose"; then
-    install_docker_compose
-  else
-    echo "Docker Compose ya está instalado."
-  fi
-}
-
-function ensure_compose_v2 {
-  if has_cmd "docker" && docker compose version &> /dev/null; then
-    return 0
-  fi
-  cat <<EOF >&2
-ERROR: No se ha encontrado 'docker compose' (Compose V2).
-
-Para instalarlo, puedes usar el plugin oficial:
-  sudo apt update
-  sudo apt install docker-compose-plugin
-
-O manualmente:
-  mkdir -p ~/.docker/cli-plugins
-  curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-    -o ~/.docker/cli-plugins/docker-compose
-  chmod +x ~/.docker/cli-plugins/docker-compose
-
-Una vez instalado 'docker compose', vuelve a ejecutar este script.
-EOF
-  exit 1
 }
 
 function fix_docker_permissions {
-  echo "Verificando y ajustando permisos para el socket de Docker..."
-  if ! groups "$USER" | grep -q '\bdocker\b'; then
-    echo "Añadiendo el usuario al grupo 'docker'..."
+  echo "Ajustando permisos del socket Docker..."
+  if ! groups "$USER" | grep -qw docker; then
     sudo usermod -aG docker "$USER"
-    newgrp docker
+    echo "📌 Usuario añadido al grupo 'docker'. Cierra y abre sesión o ejecuta 'newgrp docker' para aplicar cambios."
   fi
-
-  sudo setfacl --modify user:"$USER":rw /var/run/docker.sock
-  echo "Permisos ajustados correctamente."
 }
 
-if [[ "$1" == "-f" && -n "$2" ]]; then
+function compose_cmd {
+  if $USE_PLUGIN; then
+    docker compose "$@"
+  else
+    docker-compose "$@"
+  fi
+}
+
+if [[ "$1" == "-f" && -n "${2:-}" ]]; then
   YML_FILE="$2"
   shift 2
 else
-  YML_FILE="$BASE_DIR/$DEFAULT_FILE"
+  YML_FILE="${BASE_DIR}/${DEFAULT_FILE}"
 fi
 
-COMMAND="$1"
-if [[ -z "$COMMAND" ]]; then
-  echo "Uso: $0 [-f ruta/yml] {start|stop|status|logs}"
-  exit 1
-fi
-
-function up {
-  ensure_docker_and_compose
-  ensure_compose_v2
-  fix_docker_permissions
-  [[ -f "$YML_FILE" ]] || { echo "No se encontró $YML_FILE"; exit 1; }
-  docker compose -f "$YML_FILE" up -d
-}
-
-function down {
-  ensure_docker_and_compose
-  ensure_compose_v2
-  fix_docker_permissions
-  docker compose -f "$YML_FILE" down
-}
-
-function status {
-  docker ps --filter name=n8n
-}
-
-function logs {
-  ensure_docker_and_compose
-  ensure_compose_v2
-  fix_docker_permissions
-  docker compose -f "$YML_FILE" logs -f
-}
-
+COMMAND="${1:-}"
 case "$COMMAND" in
-  start)  up ;;
-  stop)   down ;;
-  status) status ;;
-  logs)   logs ;;
+  start)
+    ensure_docker_and_compose
+    fix_docker_permissions
+    [[ -f "$YML_FILE" ]] || { echo "ERROR: No se encontró $YML_FILE"; exit 1; }
+    compose_cmd -f "$YML_FILE" up -d
+    ;;
+  stop)
+    ensure_docker_and_compose
+    fix_docker_permissions
+    compose_cmd -f "$YML_FILE" down
+    ;;
+  status)
+    docker ps --filter name=n8n
+    ;;
+  logs)
+    ensure_docker_and_compose
+    fix_docker_permissions
+    compose_cmd -f "$YML_FILE" logs -f
+    ;;
   *)
-    echo "Uso: $0 [-f ruta/yml] {start|stop|status|logs}"
+    echo "Uso: $0 [-f archivo.yml] {start|stop|status|logs}"
     exit 1
     ;;
 esac
