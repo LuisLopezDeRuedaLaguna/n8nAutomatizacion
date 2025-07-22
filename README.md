@@ -19,11 +19,6 @@ Estos componentes son necesarios para ejecutar los contenedores y orquestar los 
 
 ---
 
-## 🚀 Flujo de Trabajo  
-*Diagrama que muestra los nodos n8n y sus conexiones, desde la descarga hasta la subida en Notion*.
-
----
-
 ## ⚙️ Instalación  
 ```bash
 # Clona el repositorio
