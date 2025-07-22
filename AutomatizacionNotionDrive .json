@@ -1,0 +1,480 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{$json[\"url\"]}}",
+        "responseFormat": "file",
+        "options": {}
+      },
+      "name": "Download File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        304,
+        608
+      ],
+      "id": "295fd22d-7cbc-46a4-b6a1-51904bb8ec05"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "={{ $binary.data.fileName }}",
+        "parents": [
+          "={{ $('Create Folder1').item.json.id }}"
+        ],
+        "options": {}
+      },
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        528,
+        608
+      ],
+      "id": "cba674c6-35f6-498f-9f03-56982585de65",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8Gt2uKv5lRr6W7Hg",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        512
+      ],
+      "id": "ce89d1a1-45f5-4d50-a320-51f81f8639b2",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "",
+          "mode": ""
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "name": "Buscar archivos en Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        512
+      ],
+      "id": "06753222-9657-4a4e-8fc1-7719f2da8a03",
+      "credentials": {
+        "notionApi": {
+          "id": "lRUwtTbEQsdJ0Ubn",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Reunimos todas las URLs y devolvemos un ítem por URL\nconst files = [];\nfor (const item of items) {\n  for (const val of Object.values(item.json)) {\n    if (Array.isArray(val)) {\n      files.push(...val.filter(el => typeof el === 'string' && el.startsWith('https')));\n    }\n  }\n}\nreturn files.map(url => ({ json: { url } }));"
+      },
+      "name": "Split Attachments1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        80,
+        608
+      ],
+      "id": "7d80718e-520a-4898-9e6b-f42ad7c8d2c4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.id }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json.name }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Check Folder1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        512
+      ],
+      "id": "5167cbb0-1eda-4e74-ab84-d17d73a8084b"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "name": "={{ $('Buscar archivos en Notion').item.json['Pregunta 1'] }}",
+        "options": {
+          "parents": [
+            "12kuQqHs1cgbKEAA0srMkjrriW4ZTzUEx"
+          ]
+        }
+      },
+      "name": "Create Folder1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        608
+      ],
+      "id": "ace0921e-467a-4f15-be2e-3b2b0b441e75",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8Gt2uKv5lRr6W7Hg",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json['Pregunta 1'] }}",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "",
+            "mode": "id"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -816,
+        512
+      ],
+      "id": "8f582b94-8c82-4d9a-b248-052c12c7d8a7",
+      "name": "Search files and folders",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8Gt2uKv5lRr6W7Hg",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "",
+          "mode": ""
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "name": "Buscar archivos en Notion1",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        608
+      ],
+      "id": "37af4d6c-9756-4772-8c3d-6338d188454e",
+      "credentials": {
+        "notionApi": {
+          "id": "lRUwtTbEQsdJ0Ubn",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"url\"]}}",
+        "responseFormat": "file",
+        "options": {}
+      },
+      "name": "Download File1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        304,
+        416
+      ],
+      "id": "3762882c-cd12-454d-875d-c4295f78d8cd"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "={{ $binary.data.fileName }}",
+        "parents": [
+          "={{ $('Search files and folders').item.json.id }}"
+        ],
+        "options": {}
+      },
+      "name": "Upload to Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        528,
+        416
+      ],
+      "id": "9c9d552b-cc74-4178-bb66-df2f4e28a038",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8Gt2uKv5lRr6W7Hg",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Reunimos todas las URLs y devolvemos un ítem por URL\nconst files = [];\nfor (const item of items) {\n  for (const val of Object.values(item.json)) {\n    if (Array.isArray(val)) {\n      files.push(...val.filter(el => typeof el === 'string' && el.startsWith('https')));\n    }\n  }\n}\nreturn files.map(url => ({ json: { url } }));"
+      },
+      "name": "Split Attachments",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        80,
+        416
+      ],
+      "id": "ae6adc86-d425-4d4d-a676-b0bd01a0a1a5"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "",
+          "mode": ""
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "name": "Buscar archivos en Notion2",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        416
+      ],
+      "id": "efc3b787-a73e-4789-a72b-0dc608eb337b",
+      "credentials": {
+        "notionApi": {
+          "id": "lRUwtTbEQsdJ0Ubn",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "archive",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Buscar archivos en Notion').item.json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        512
+      ],
+      "id": "ed6e7e27-0ddb-467e-9ea4-0512fc646367",
+      "name": "Archive page",
+      "credentials": {
+        "notionApi": {
+          "id": "lRUwtTbEQsdJ0Ubn",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Buscar archivos en Notion": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Buscar archivos en Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Attachments1": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Folder1": {
+      "main": [
+        [
+          {
+            "node": "Buscar archivos en Notion2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Folder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Check Folder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar archivos en Notion1": {
+      "main": [
+        [
+          {
+            "node": "Split Attachments1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Folder1": {
+      "main": [
+        [
+          {
+            "node": "Buscar archivos en Notion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File1": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Attachments": {
+      "main": [
+        [
+          {
+            "node": "Download File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar archivos en Notion2": {
+      "main": [
+        [
+          {
+            "node": "Split Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "node": "Archive page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive1": {
+      "main": [
+        [
+          {
+            "node": "Archive page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "112f07c5-d9c4-4603-973d-599ecf8686e2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1674f80805a8f13f9f1d0bb83025cbc9812b1918fec1d05d1c7c7ac6ac7dd16"
+  },
+  "id": "WXgzmoi4TxI10wL9",
+  "tags": []
+}
