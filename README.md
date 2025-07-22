@@ -1,5 +1,5 @@
 ## 📖 Descripción  
-Este proyecto automatiza la descarga de archivos desde Google Drive y su subida a Notion, centralizando contenidos de forma transparente. Ideal para equipos que necesitan sincronizar activos sin intervención manual y mantener documentación.
+Este proyecto automatiza la descarga de archivos desde Notion y lo sube a Google Drive, centralizando contenidos de forma transparente. Ideal para equipos que necesitan sincronizar activos sin intervención manual y mantener documentación.
 
 ---
 
