@@ -1,48 +1,34 @@
-# 🚀 n8n Auto Deploy Script
+## 📖 Descripción  
+Este proyecto automatiza la descarga de archivos desde Google Drive y su subida a Notion, centralizando contenidos de forma transparente. Ideal para equipos que necesitan sincronizar activos sin intervención manual y mantener documentación.
 
-Automatiza la instalación y gestión de **n8n** con **Docker Compose**, verificando los requisitos antes de iniciar.
+---
+
+## 🎯 Motivación  
+En entornos DevOps y ciberseguridad, la consistencia de la documentación es crítica.  
+La necesidad de un flujo automático surgió para evitar errores humanos y garantizar que los archivos compartidos en Drive estén siempre disponibles en Notion sin duplicar.
 
 ---
 
-## 🧠 ¿Qué hace este script?
+## 🛠️ Requisitos previos  
+Antes de empezar, asegúrate de tener instalado en tu sistema lo siguiente:
 
-- Verifica que tengas instalado `docker` y **Docker Compose V2** (`docker compose`).  
-  Si no está, muestra instrucciones de cómo instalarlo.  
-- Permite indicar un archivo `docker-compose.yml` con el flag `-f`.  
-- Gestiona el contenedor `n8n` con los comandos:  
-  - `start` (arranca o reinicia)  
-  - `stop` (detiene)  
-  - `status` (muestra estado)  
-  - `logs` (ver logs en tiempo real)
+- **Docker** (versión 20.10 o superior)  
+- **Docker Compose** (versión 1.29 o superior)
+
+Estos componentes son necesarios para ejecutar los contenedores y orquestar los servicios definidos en este proyecto.
 
 ---
-<!--
-## 📋 Requisitos
 
-- `docker` instalado.  
-- `docker compose` (versión V2):  
-  - Con paquete oficial:
-    ```bash
-    sudo apt update
-    sudo apt install docker-compose-plugin
-    ```  
-  - O instalando el plugin manualmente:
-    ```bash
-    mkdir -p ~/.docker/cli-plugins
-    curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-      -o ~/.docker/cli-plugins/docker-compose
-    chmod +x ~/.docker/cli-plugins/docker-compose
-    ```
+## 🚀 Flujo de Trabajo  
+*Diagrama que muestra los nodos n8n y sus conexiones, desde la descarga hasta la subida en Notion*.
 
 ---
--->
-## ⚙️ Uso
 
-En el caso de que se quierea usar un .yml se deberá usar el comando 
- ```bash
- ./n8n-auto.sh -f .yml start
- ```
-Hazlo ejecutable:
-
+## ⚙️ Instalación  
 ```bash
-chmod +x n8n-auto.sh
+# Clona el repositorio
+git clone https://github.com/LuisLopezDeRuedaLaguna/n8nAutomatizacion.git  
+cd n8nAutomatizacion
+
+# Arranca los servicios con Docker Compose
+docker compose up -d
